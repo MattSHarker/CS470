@@ -14,7 +14,7 @@
 #include <string.h>
 
 #define BUFFER_SIZE 1024
-#define ARR_SIZE 128
+#define DEF_ARR_SIZE 128
 
 
 // reads in a file to be used later
@@ -66,9 +66,9 @@ int merge(int arr[], int left, int mid, int right)
 	
 	// print initial status
 	printf("Process ID: %u\n", getpid());
-	printf("Subarray 1: ");
+	printf("Left subarray:  ");
 	printArr(lArr, 0, lSize);
-	printf("Subarray 2: ");
+	printf("Right subarray: ");
 	printArr(rArr, 0, rSize);
 	
 	
@@ -111,7 +111,7 @@ int merge(int arr[], int left, int mid, int right)
 	
 	
 	// print merged status
-	printf("Merged arrays: ");
+	printf("Merged arrays:  ");
 	printArr(arr, left, right + 1);
 	printf("\n");
 }
@@ -168,19 +168,27 @@ void mergeSort(int arr[], int left, int right)
 
 int main(int argc, char* argv[])
 {
+	// ensure the right format is entered
+	if (argc != 3)
+	{
+		printf("Command not recognized, please ensure a file name and a delimiter are entered\n");
+		exit(0);
+	}
+	
+	
 	// read in the file
     char buff[BUFFER_SIZE];
     
     if(readFile(buff, argv[1]) == 1)
     	return 1;
-    
+ 
     
     // create an array in shared memory
     int *arr;
     int shmid;
     key_t key = IPC_PRIVATE;
     
-	if ((shmid = shmget(key, ARR_SIZE, IPC_CREAT | 0666)) < 0)
+	if ((shmid = shmget(key, DEF_ARR_SIZE, IPC_CREAT | 0666)) < 0)
 	{
 		perror("shmget");
 		exit(1);
@@ -234,5 +242,4 @@ int main(int argc, char* argv[])
     
     return 0;
 }
-
 
