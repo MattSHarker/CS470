@@ -19,7 +19,6 @@ pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 void init()
 {
 	clear();
-	printf("For a list of commands type \"help\" (without the quotes)\n");
 }
 
 void helpCmd()
@@ -93,7 +92,7 @@ void createTextFile(int n)
 	
 	for (int i = 0; i < n; i++)
 	{
-		fprintf(file, "%d", rand());
+		fprintf(file, "%d", rand() % 1000);
 		fprintf(file, "\t");
 	}
 	
@@ -144,6 +143,7 @@ int isProbOneDone(int n)
 	FILE *file;
 	file = fopen("prob1.bin", "rb");
 	
+	
 	for (int i = 0; i < nSquared; i++)
 	{
 		int b = 0;
@@ -153,9 +153,9 @@ int isProbOneDone(int n)
 		if (i%n == 0)
 			printf("\n");
 		printf("%d ", b);
-	}
+	}	
 	
-	printf("\n");
+	printf("\n\n");
 	
 	fclose(file);
 	
@@ -188,6 +188,8 @@ int isProbTwoDone(int n)
 		arr[i++] = atoi(tok);
 		tok = strtok(NULL, "\t");
 	}
+	
+	printArr(n);
 	
 	for (int i = 0; i < (n*n)-1; i++)
 		if (arr[i] > arr[i+1])
@@ -363,7 +365,7 @@ int changeArr(int* arr)
 		return 1;
 }
 
-void* problemOneJExec(void* x_void_ptr)
+void* problemOneExec(void* x_void_ptr)
 {
 	int n = (int *)x_void_ptr;
 	pthread_t tid = pthread_self();
@@ -374,8 +376,6 @@ void* problemOneJExec(void* x_void_ptr)
 	int arr[n*n];
 	
 	pthread_mutex_lock(&lock);
-	
-	printf("Thread %ld cheacking position (%d, %d)\n", tid, row, col);
 	
 	getArr(arr, row, col, n);
 	
@@ -425,7 +425,40 @@ void problemOne(int numThreads, int numElems)
 		pthread_mutex_destroy(&lock);
 	}
 	
-	printf("Problem 1 has completed\n");
+	printf("Problem 1 has completed\n\n");
+}
+
+void printArr(int n)
+{
+	FILE *file;
+	file = fopen("prob2.txt", "r");
+	char buff[MAX];
+	int arr[n*n];
+	
+	if (file == NULL)
+	{
+		printf("File could not be opened\n");
+		exit(EXIT_FAILURE);
+	}
+	
+	fscanf(file, "%[^\n]", buff);
+	fclose(file);
+	
+	char *tok = strtok(buff, "\t");
+	
+	int i = 0;
+	while (tok != NULL)
+	{
+		arr[i++] = atoi(tok);
+		tok = strtok(NULL, "\t");
+	}
+	
+	printf("\n");
+	for (int i = 0; i < n*n; i++)
+	{
+		printf("%d ", arr[i]);
+	}
+	printf("\n");
 }
 
 void* problemTwoExec(void* x_void_ptr)
@@ -457,13 +490,6 @@ void* problemTwoExec(void* x_void_ptr)
 		arr[i++] = atoi(tok);
 		tok = strtok(NULL, "\t");
 	}
-	
-	printf("Array before: ");
-	for (int i = 0; i < n*n; i++)
-	{
-		printf("%d ", arr[i]);
-	}
-	printf("\n");
 
 	// create random numbers
 	int low = rand() % (n*n);
@@ -506,24 +532,14 @@ void* problemTwoExec(void* x_void_ptr)
 		else
 			newArr[i] = arr[i];
 	}
-	
-	printf("Array after: ");
-	for (int z = 0; z < n*n; z++)
-	{
-		printf("%d ", newArr[z]);
-	}
-	printf("\n");
-	
-	//print the array and the sorting info
 
-	printf("The subarray (%d, %d) was sorted using ", low, high);
+	printf("Thread %ld sorted (%d, %d) with ", tid, low, high);
 	if (sortType == 0)
 		printf("bubble sort\n");
 	else if (sortType == 1)
 		printf("quick sort\n");
 	else
 		printf("heap sort\n");
-	printf("Thread ID: %d\n\n");
 
 	// write the array back into the file
 	
@@ -539,8 +555,6 @@ void* problemTwoExec(void* x_void_ptr)
 		fprintf(file, "%d\t", newArr[i]);
 	}
 	fprintf(file, "\n");
-	
-	printf("\n");
 
 	fclose(file);
 	
@@ -627,7 +641,11 @@ int main(int argc, char** argv)
 	while(1)
 	{
 		// get the command from the user
-		printf("Please enter a command: ");
+		printf("Available Commands:\n");
+		printf("1) problem 1\n");
+		printf("2) problem 2\n");
+		printf("3) exit\n");
+		printf("Command: ");
 		fgets(command, MAX, stdin);		
 		command[strcspn(command, "\n")] = 0;	// remove trailing new-line
 		
@@ -684,15 +702,10 @@ int main(int argc, char** argv)
 			problemTwo(numThreads, numElems);
 			
 		}
-		else if (strcmp(command, "exit") == 0)	// exit the program
+		else if (strcmp(command, "3") == 0 || strcmp(command, "exit"))	// exit the program
 		{
 			printf("Exiting program\n");
 			return 1;
-		}
-		else	// command is not recognized
-		{
-			printf("Please enter a proper command. For help type \"help\"\n");
-			continue;
 		}
 	}
 	
