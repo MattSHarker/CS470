@@ -9,40 +9,58 @@
 
 #include "processInfo.h"
 
-// returns a random number from [0..n] (inclusive)
+#define MAX_BURST_TIME 10
+#define MAX_PRIORITY 127
+
+/* for reference
+
+typedef enum {CREATE, WAITING, EXECUTING, READY, TERMINATING} Status;
+
+typedef struct {
+	Status state;	// current state of the process
+	int pid;		// process ID
+	int priority;	// priority 1-127
+	int burstTime;	// CPU burst time 0-10
+} ProcessInfo;
+*/
+
+// returns a random number from [0..n-1] (inclusive)
 int randomInt(int n)
 {
-	return rand() % n+1;
+	return rand() % n;
 }
 
 // initializes a process
 void initProcess(ProcessInfo* pi)
 {
-	pi->state = READY;
-	pi->pid = randomInt(INT_MAX);
-	pi->priority = randomInt(127); 
-	pi->burstTime = randomInt(10);
+	pi->pid = randomInt(INT_MAX/2);
+	changeProcState(pi, CREATE);
+	pi->priority = randomInt(MAX_PRIORITY+1); 
+	pi->burstTime = (randomInt(MAX_BURST_TIME)+1);
+	changeProcState(pi, READY);
 }
 
 // changes the process's state
 void changeProcState(ProcessInfo* pi, Status status)
 {
 	pi->state = status;
+	printf("Process %d is now: ", pi->pid);
+	printProcState(pi);
 }
 
 // prints the process's state
 void printProcState(const ProcessInfo* pi)
 {
 	if (pi->state == CREATE)
-		printf("State: Create\n");
+		printf("CREATE\n");
 	else if (pi->state == WAITING)
-		printf("State: Waiting\n");
+		printf("WAITING\n");
 	else if (pi->state == EXECUTING)
-		printf("State: Executing\n");
+		printf("EXECUTING\n");
 	else if (pi->state == READY)
-		printf("State: Ready\n");
+		printf("READY\n");
 	else if (pi->state == TERMINATING)
-		printf("State: Terminating\n");
+		printf("TERMINATING\n");
 }
 
 // prints the process's ID

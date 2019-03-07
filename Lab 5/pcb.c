@@ -33,6 +33,12 @@ void initPCB(PCB* pcb, int size)
 		initProcess(&pcb->queue[i]);
 }
 
+// checks if the PCB is empty
+int isEmpty(PCB* pcb)
+{
+	return (pcb->size == pcb->front);
+}
+
 // destructs a PCB
 void destructPCB(PCB* pcb)
 {
@@ -73,9 +79,10 @@ void sortByBurstTime(PCB* pcb)
 void randomizeStates(PCB* pcb)
 {
 	int size = pcb->size;
+	int front = pcb->front;
 	
 	// goes through every process and randomly changes its state 
-	for (int i = 0; i < size; i++)
+	for (int i = front; i < size; i++)
 	{
 		if (rand() % 2)
 			changeProcState(&pcb->queue[i], READY);
@@ -111,14 +118,50 @@ void incrementFront(PCB* pcb)
 
 
 // ages all of the processes in the PCB
-void ageProcesses(PCB* pcb)
+void agePCBProcesses(PCB* pcb)
 {
-	for (int i = 0; i < pcb->size; i++)
+	for (int i = pcb->front; i < pcb->size; i++)
 		decrementPriority(&pcb->queue[i]);
 }
 
-// prints out the PCB
+// takes half of one PCB and puts it into another
+void balancePCBQueues(PCB* pcbE, PCB* pcbN, int x)	// E for Empty, N for Not empty
+{
+	// vars to make the other functions nicer
+	int halfN = (pcbN->size - pcbN->front) / 2;  // half of the remainder in pcbN
+	int newSizeE = halfN + pcbE->size;
+	int newSizeN = pcbN->size - halfN;
+	
+	// change size of empty PCB
+	setPCBSize(pcbE, newSizeE);
+	
+	for(int i = 0; i < halfN; i++)
+		pcbE->queue[pcbE->front+i] = pcbN->queue[pcbN->front+halfN+i];
+		
+	// change size of non-empty PCB
+	setPCBSize(pcbN, newSizeN);
+	
+	// display new PCB contents
+	printf("New PCB queues\n");
+	printf("Queue %d:\n", x);
+	printPCB(pcbE);
+	printf("\nQueue %d:\n", (x%2)+1);
+	printPCB(pcbN);
+	printf("\n");
+}
+
+// prints out the remainder of the PCB
 void printPCB(PCB* pcb)
+{
+	for (int i = pcb->front; i < pcb->size; i++)
+	{
+		printProcessInfo(&pcb->queue[i]);
+		printf("\n");
+	}
+}
+
+// prints the full PCB for debugging
+void printFullPCB(PCB* pcb)
 {
 	for (int i = 0; i < pcb->size; i++)
 	{

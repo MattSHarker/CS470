@@ -16,6 +16,7 @@ typedef struct {
 } ProcessInfo;
 
 int randomInt(int);
+
 void initProcess(ProcessInfo*);
 void changeProcState(ProcessInfo*, Status);
 

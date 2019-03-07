@@ -15,6 +15,7 @@ typedef struct {
 }	PCB;
 
 void initPCB(PCB*, int);
+int isEmpty(PCB*);
 void destructPCB(PCB*);
 
 int priorityCmp(const void*, const void*);
@@ -23,13 +24,15 @@ void sortByPriority(PCB*);
 void sortByBurstTime(PCB*);
 
 void randomizeStates(PCB*);
-void ageProcesses(PCB*);
+void agePCBProcesses(PCB*);
 void setPCBSize(PCB*, int);
 void decrementPCBSize(PCB*);
 void incrementPCBSize(PCB*);
 void incrementFront(PCB*);
-void printPCB(PCB*);
+void balancePCBQueues(PCB*, PCB*, int);
 
+void printPCB(PCB*);
+void printFullPCB(PCB*);
 
 
 #endif
