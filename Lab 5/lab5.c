@@ -108,18 +108,12 @@ void executeProcesses(PCB* pcb1, PCB* pcb2)
 	
 	// check the mutex
 	checkMutex();
-
 	
 	// reorder the PCBs to follow the correct processing order
 	sortByBurstTime(pcb1);
 	sortByPriority(pcb2);
 	
-
-	
-	puts("creating cpu");
 	CPU cpu = {.pcb1 = pcb1, .pcb2 = pcb2};
-
-	puts("added pcbs to cpu");
 	
 	while (!isEmpty(pcb1) || !isEmpty(pcb2))
 	{
@@ -138,7 +132,7 @@ void executeProcesses(PCB* pcb1, PCB* pcb2)
 		pthread_join(randomizer, NULL);
 	}
 	
-	printf("\nAll process have finished execution\n");
+	printf("All process have finished execution\n\n");
 }
 
 void* runProcess(void* pcbx)
@@ -150,17 +144,20 @@ void* runProcess(void* pcbx)
 	int id = tempPI->pid;
 	int burstTime = tempPI->burstTime;
 	
-	pthread_mutex_lock(&lock);
+	if (pcb->front < pcb->size)
+	{
+		pthread_mutex_lock(&lock);
 	
-	changeProcState(&pcb->queue[pcb->front], EXECUTING);
-	printf("Executing process %d...\n", id);
-	sleep(burstTime);
-	changeProcState(&pcb->queue[pcb->front], TERMINATING);
-	printf("Process finished executing in %d seconds\n\n", burstTime);
+		changeProcState(&pcb->queue[pcb->front], EXECUTING);
+		printf("Executing process %d...\n", id);
+		sleep(burstTime);
+		changeProcState(&pcb->queue[pcb->front], TERMINATING);
+		printf("Process finished executing in %d seconds\n\n", burstTime);
 	
-	pthread_mutex_unlock(&lock);
+		pthread_mutex_unlock(&lock);
 	
-	incrementFront(pcb);
+		incrementFront(pcb);
+	}
 }
 
 // ages the processes every 2 seconds
@@ -177,11 +174,25 @@ void* ageProcesses(void* cpuX)
 	
 	pthread_mutex_lock(&lock);
 	
-	agePCBProcesses(pcb1);
-	agePCBProcesses(pcb2);
+	if (!isEmpty(pcb1))
+	{
+		printf("\n~~ Aging PCB 1 ~~\n");
+		agePCBProcesses(pcb1);
+		printf("New priorities for Queue 1\n");
+		printAllPriorities(pcb1);
+	}
+	
+	if (!isEmpty(pcb2))
+	{
+		printf("~~Aging PCB 2 ~~\n");
+		agePCBProcesses(pcb2);
+		printf("New priorities for PCB 2\n");
+		printAllPriorities(pcb2);
+	}
+	
+	printf("\n");
 	
 	pthread_mutex_unlock(&lock);
-	printf("Processes have been aged\n\n");
 	pthread_exit(&lock);
 }
 
@@ -198,11 +209,23 @@ void* randomizePCBStates(void* cpuX)
 	
 	pthread_mutex_lock(&lock);
 	
-	randomizeStates(pcb1);
-	randomizeStates(pcb2);
+	if (!isEmpty(pcb1))
+	{
+		printf("~~ Randomizing PCB 1 states ~~\n");
+		randomizeStates(pcb1);
+		printf("\n");
+	}
+		
+	if (!isEmpty(pcb2))
+	{
+		printf("~~ Randomizing PCB 2 states ~~\n");
+		randomizeStates(pcb2);
+		printf("\n");
+	}
+	
+	printf("\n");
 	
 	pthread_mutex_unlock(&lock);
-	printf("Process states have been randomized\n\n");
 	pthread_exit(EXIT_SUCCESS);
 }
 
@@ -217,7 +240,7 @@ void* balanceLoad(void* cpuX)
 	PCB* pcb1 = cpu->pcb1;
 	PCB* pcb2 = cpu->pcb2;
 	
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&lock);	
 	
 	// if pcb1 is empty and pcb2 has more than 1 proc
 	if (isEmpty(pcb1) && (pcb2->size - pcb1->front) > 1)
@@ -244,25 +267,22 @@ int main(int argc, char** argv)
 	
 	// get the process amounts from the command line
 	m = cliToInt(argv[1]);
-	n = cliToInt(argv[2]);	
-	printf("m: %d\n", m);
-	printf("n: %d\n\n", n);
+	n = cliToInt(argv[2]);
 	
 	PCB pcb1;	// SJF
 	PCB pcb2;	// Priority
 	
 	// initialize the PCBs
-	puts("Creating PCBS");
+	printf("\n~~ Creating PCBS ~~\n");
+	
+	printf("\nPCB 1: Shortest Job First\n");
 	initPCB(&pcb1, m);
+	printf("\nPCB 2: Priority\n");
 	initPCB(&pcb2, n);
-	puts("PCBs created\n");	
+	printf("\n~~ PCBs created ~~\n\n");	
 	
 	// execute the processes in the PCBs
 	executeProcesses(&pcb1, &pcb2);
-	
-	// free allocated memory
-	destructPCB(&pcb1);
-	destructPCB(&pcb2);
 	
 	return 0;
 }

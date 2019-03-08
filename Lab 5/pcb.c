@@ -33,6 +33,21 @@ void initPCB(PCB* pcb, int size)
 		initProcess(&pcb->queue[i]);
 }
 
+// initializes a PCB without printing anything
+void initPCBQuiet(PCB* pcb, int size)
+{
+	// set up the queue of processes
+	pcb->queue = (ProcessInfo *) malloc(sizeof(ProcessInfo) * size);
+	
+	// set up the size and front
+	pcb->size = size;
+	pcb->front = 0;
+	
+	// create each process
+	for (int i = 0; i < size; i++)
+		initProcessQuiet(&pcb->queue[i]);
+}
+
 // checks if the PCB is empty
 int isEmpty(PCB* pcb)
 {
@@ -127,20 +142,32 @@ void agePCBProcesses(PCB* pcb)
 // takes half of one PCB and puts it into another
 void balancePCBQueues(PCB* pcbE, PCB* pcbN, int x)	// E for Empty, N for Not empty
 {
-	// vars to make the other functions nicer
+// vars to make the other functions nicer
 	int halfN = (pcbN->size - pcbN->front) / 2;  // half of the remainder in pcbN
 	int newSizeE = halfN + pcbE->size;
 	int newSizeN = pcbN->size - halfN;
 	
+	printf("~~ Balancing Queues ~~\n\n");
+	
 	// change size of empty PCB
 	setPCBSize(pcbE, newSizeE);
 	
+	PCB* temp;
+	initPCBQuiet(temp, halfN);
+	
 	for(int i = 0; i < halfN; i++)
-		pcbE->queue[pcbE->front+i] = pcbN->queue[pcbN->front+halfN+i];
+		temp->queue[temp->front+i] = pcbN->queue[pcbN->front+halfN+i];
+	
+	if (x == 1)
+		sortByBurstTime(temp);
+	else
+		sortByPriority(temp);
+	
+	for (int i = 0; i < halfN; i++)
+		pcbE->queue[pcbE->front+i] = temp->queue[temp->front+i];
 		
 	// change size of non-empty PCB
 	setPCBSize(pcbN, newSizeN);
-	
 	// display new PCB contents
 	printf("New PCB queues\n");
 	printf("Queue %d:\n", x);
@@ -148,6 +175,7 @@ void balancePCBQueues(PCB* pcbE, PCB* pcbN, int x)	// E for Empty, N for Not emp
 	printf("\nQueue %d:\n", (x%2)+1);
 	printPCB(pcbN);
 	printf("\n");
+
 }
 
 // prints out the remainder of the PCB
@@ -169,5 +197,18 @@ void printFullPCB(PCB* pcb)
 		printf("\n");
 	}
 }
+
+// prints the priorities of all of the PCB's processes
+void printAllPriorities(PCB* pcb)
+{
+	for (int i = pcb->front; i < pcb->size; i++)
+	{
+		ProcessInfo* temp = &pcb->queue[i];
+		printf("Process %d priority: %d\n", temp->pid, temp->priority);
+	}
+	
+	printf("\n");
+}
+
 
 

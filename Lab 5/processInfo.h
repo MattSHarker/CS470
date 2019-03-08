@@ -18,6 +18,7 @@ typedef struct {
 int randomInt(int);
 
 void initProcess(ProcessInfo*);
+void initProcessQuiet(ProcessInfo*);
 void changeProcState(ProcessInfo*, Status);
 
 void printProcState(const ProcessInfo*);

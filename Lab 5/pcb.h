@@ -15,6 +15,7 @@ typedef struct {
 }	PCB;
 
 void initPCB(PCB*, int);
+void initPCBQuiet(PCB*, int);
 int isEmpty(PCB*);
 void destructPCB(PCB*);
 
@@ -33,6 +34,6 @@ void balancePCBQueues(PCB*, PCB*, int);
 
 void printPCB(PCB*);
 void printFullPCB(PCB*);
-
+void printAllPriorities(PCB*);
 
 #endif

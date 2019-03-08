@@ -40,6 +40,15 @@ void initProcess(ProcessInfo* pi)
 	changeProcState(pi, READY);
 }
 
+// initializes a process without printing info
+void initProcessQuiet(ProcessInfo* pi)
+{
+	pi->pid = randomInt(INT_MAX);
+	pi->priority = randomInt(MAX_PRIORITY+1); 
+	pi->burstTime = (randomInt(MAX_BURST_TIME)+1);
+	pi->state = READY;
+}
+
 // changes the process's state
 void changeProcState(ProcessInfo* pi, Status status)
 {
@@ -85,6 +94,7 @@ void printProcBurstTime(const ProcessInfo* pi)
 void printProcessInfo(const ProcessInfo* pi)
 {
 	printProcID(pi);
+	printf("State: ");
 	printProcState(pi);
 	printProcPriority(pi);
 	printProcBurstTime(pi);
