@@ -109,9 +109,6 @@ void executeProcesses(PCB* pcb1, PCB* pcb2)
 	// check the mutex
 	checkMutex();
 	
-	// reorder the PCBs to follow the correct processing order
-	sortByBurstTime(pcb1);
-	sortByPriority(pcb2);
 	
 	CPU cpu = {.pcb1 = pcb1, .pcb2 = pcb2};
 	
@@ -280,6 +277,17 @@ int main(int argc, char** argv)
 	printf("\nPCB 2: Priority\n");
 	initPCB(&pcb2, n);
 	printf("\n~~ PCBs created ~~\n\n");	
+	
+	// reorder the PCBs to follow the correct processing order
+	sortByBurstTime(&pcb1);
+	sortByPriority(&pcb2);
+	
+	// printf the PCBs
+	printf("~~ PCB 1 ~~\n");
+	printPCB(&pcb1);
+	printf("\n~~ PCB 2 ~~\n");
+	printPCB(&pcb2);
+	printf("\n");
 	
 	// execute the processes in the PCBs
 	executeProcesses(&pcb1, &pcb2);
